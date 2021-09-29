@@ -29,8 +29,41 @@ const NewShmood = (props) => {
   const [emoji, setEmoji] = useState("");
   const [loading, setLoading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [caption, setCaption] = useState("");
 
-  const submitShmood = () => {};
+  const getCharactersLeft = () => {
+    const maxLength = isPrivate ? 500 : 50;
+    return maxLength - caption.length;
+  };
+
+  const submitShmood = () => {
+    const headers = { Authorization: "bearer " + state.jwt };
+    axios
+      .post(
+        `${BASE_URL}/api/new_post`,
+        { caption, emoji, private: isPrivate },
+        { headers: headers }
+      )
+      .then((response) => {
+        setLoading(false);
+        setCaption("");
+        setEmoji("");
+        showMessage({
+          message: "Success!",
+          description: `Your shmood has been updated. Plus refresh your feed to see the new shmood.`,
+          type: "success",
+        });
+      })
+      .catch((error) => {
+        console.log("error posting: ", error);
+        setLoading(false);
+        showMessage({
+          message: "Error",
+          description: "Error posting shmood",
+          type: "danger",
+        });
+      });
+  };
   return (
     <TouchableWithoutFeedback
       onPress={Keyboard.dismiss}
@@ -100,24 +133,40 @@ const NewShmood = (props) => {
                   style={
                     isPrivate ? styles.textAreaPrivate : styles.textAreaFriends
                   }
+                  onChangeText={(text) => setCaption(text)}
+                  value={caption}
                   underlineColorAndroid="transparent"
                   placeholder="Whats on your mind?"
                   placeholderTextColor="grey"
                   numberOfLines={isPrivate ? 10 : 2}
+                  //   multiline={isPrivate}
                   multiline
                 />
+                <Text
+                  style={{ color: getCharactersLeft() >= 0 ? "#666" : "red" }}
+                >
+                  Characters Left: {getCharactersLeft()}{" "}
+                </Text>
               </View>
               {!loading ? (
                 <View style={{ alignItems: "center", marginTop: 20 }}>
-                  <AwesomeButtonRick
-                    width={160}
-                    raiseLevel={2}
-                    onPress={submitShmood}
-                  >
-                    Post Shmood
-                  </AwesomeButtonRick>
+                  {getCharactersLeft() >= 0 && (
+                    <AwesomeButtonRick
+                      width={160}
+                      raiseLevel={2}
+                      onPress={submitShmood}
+                    >
+                      Post Shmood
+                    </AwesomeButtonRick>
+                  )}
                 </View>
-              ): <Text style={{textAlign: "center", fontSize: 20, marginTop: 20}}>Loading....</Text>}
+              ) : (
+                <Text
+                  style={{ textAlign: "center", fontSize: 20, marginTop: 20 }}
+                >
+                  Loading....
+                </Text>
+              )}
             </View>
           )}
         </SafeAreaView>

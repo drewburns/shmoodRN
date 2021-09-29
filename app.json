@@ -2,7 +2,10 @@
   "expo": {
     "name": "shmood",
     "slug": "shmood",
-    "version": "1.0.0",
+    "version": "1.0.3",
+    "scheme": "shmoodapp",
+    "platforms": ["ios", "android", "web"],
+    "privacy": "public",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -13,11 +16,10 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "andrewburns.shmood"
     },
     "web": {
       "favicon": "./assets/favicon.png"

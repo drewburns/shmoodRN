@@ -1,59 +1,36 @@
 import React, { useEffect, useContext, useState } from "react";
 import {
   StyleSheet,
-  Button,
   Text,
   View,
+  Modal,
+  Button,
   FlatList,
   RefreshControl,
-  Image,
-  Switch,
-  processColor,
-  ShadowPropTypesIOS,
 } from "react-native";
 import axios from "axios";
 import { GlobalContext } from "../GlobalContext";
 import { showMessage, hideMessage } from "react-native-flash-message";
 import AwesomeButtonRick from "react-native-really-awesome-button/src/themes/rick";
-import Item from "./Item";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import FriendItem from "./FriendItem";
 const { BASE_URL } = require("../constants");
-
-const Feed = (props) => {
+export default function FriendList(props) {
   const { state, setState } = useContext(GlobalContext);
+  const [friends, setFriends] = useState([]);
+  const [page, setPage] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const [
     onEndReachedCalledDuringMomentum,
     setOnEndReachedCalledDuringMomentum,
   ] = useState(false);
-  const [posts, setPosts] = useState([]);
-  const [page, setPage] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState({});
-  const [showPrivate, setShowPrivate] = useState(false);
 
-  const isCurrentUser = () => {
-    return state.user && user.id === state.user.id;
-  };
   useEffect(() => {
     (async () => {
       await getItems();
     })();
   }, []);
 
-  useEffect(() => {
-    if (refreshing) {
-      getItems();
-    }
-  }, [refreshing]);
-
-  useEffect(() => {
-    // if (refreshing) {
-    //   getItems();
-    // }
-    setPosts([]);
-    setPage(0);
-    setRefreshing(true);
-    getItems();
-  }, [showPrivate]);
   FlatListItemSeparator = () => {
     return (
       <View
@@ -65,26 +42,11 @@ const Feed = (props) => {
       />
     );
   };
-
-  const onEndReached = () => {
-    if (!onEndReachedCalledDuringMomentum) {
-      getItems();
-      setOnEndReachedCalledDuringMomentum(true);
-    }
-  };
-
-  const onRefresh = () => {
-    setPosts([]);
-    setPage(0);
-    setRefreshing(true);
-  };
-
   const getItems = () => {
     const headers = { Authorization: "bearer " + state.jwt };
-    const feedPath = props.route.params.feedPath;
-    const privateVar = showPrivate ? "true" : "false";
+    const type = props.route.params.type;
     axios
-      .get(`${BASE_URL}/${feedPath}?page=${page}&private=${privateVar}`, {
+      .get(`${BASE_URL}/api/friends/${type}?page=${page}`, {
         headers: headers,
       })
       .then((response) => {
@@ -94,16 +56,16 @@ const Feed = (props) => {
         }
 
         if (response.data) {
-          setPosts(posts.concat(response.data));
+          setFriends(friends.concat(response.data));
           setPage(page + 1);
           setRefreshing(false);
         }
       })
       .catch((error) => {
-          console.log(error);
+        console.log(error);
         showMessage({
           message: "Error",
-          description: "Error getting shmoods",
+          description: "Error getting friends",
           type: "danger",
         });
       });
@@ -114,41 +76,31 @@ const Feed = (props) => {
     setPage(0);
   };
 
+  const onEndReached = () => {
+    if (!onEndReachedCalledDuringMomentum) {
+      getItems();
+      setOnEndReachedCalledDuringMomentum(true);
+    }
+  };
+
+  const onRefresh = () => {
+    setFriends([]);
+    setPage(0);
+    setRefreshing(true);
+  };
   return (
     <View style={styles.container}>
-      <View style={{ flexDirection: "row", marginTop: 8 }}>
-        <Text
-          style={{
-            marginRight: 5,
-            marginTop: 3,
-            fontSize: 18,
-            textDecorationLine: showPrivate ? "none" : "underline",
-          }}
-        >
-          Friends
-        </Text>
-        <Switch
-          trackColor={{ false: "#81b0ff", true: "#81b0ff" }}
-          thumbColor={showPrivate ? "#f4f3f4" : "#f4f3f4"}
-          ios_backgroundColor="#81b0ff"
-          onValueChange={() => setShowPrivate(!showPrivate)}
-          value={showPrivate}
-        />
-        <Text
-          style={{
-            marginLeft: 5,
-            marginTop: 3,
-            fontSize: 18,
-            textDecorationLine: !showPrivate ? "none" : "underline",
-          }}
-        >
-          Mine
-        </Text>
-      </View>
-      <View style={{backgroundColor: "#d3d3d3", height: 2, width: 1000, marginTop: 10}}></View>
-      {posts.length > 0 ? (
+      <View
+        style={{
+          backgroundColor: "#d3d3d3",
+          height: 2,
+          width: 1000,
+          marginTop: 10,
+        }}
+      ></View>
+      {friends.length > 0 ? (
         <FlatList
-          data={posts}
+          data={friends}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={FlatListItemSeparator}
           onEndReached={onEndReached}
@@ -159,12 +111,12 @@ const Feed = (props) => {
           onMomentumScrollBegin={() => {
             setOnEndReachedCalledDuringMomentum(false);
           }}
-          renderItem={({ item }) => <Item post={item} />}
+          renderItem={({ item }) => <FriendItem friendship={item} />}
           keyExtractor={(item, index) => String(index)}
         />
       ) : (
         <View style={styles.emptySearch}>
-          <Text style={styles.emptySearchText}>No Shmoods Found</Text>
+          <Text style={styles.emptySearchText}>No Friends Found</Text>
           <AwesomeButtonRick raiseLevel={2} onPress={retryItems}>
             Click To Retry
           </AwesomeButtonRick>
@@ -172,7 +124,8 @@ const Feed = (props) => {
       )}
     </View>
   );
-};
+}
+
 const styles = {
   container: {
     flex: 1,
@@ -192,5 +145,3 @@ const styles = {
     flex: 1,
   },
 };
-
-export default Feed;

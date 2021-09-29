@@ -14,7 +14,7 @@ export default class HomePage extends Component {
       <HomeStack.Navigator>
         <HomeStack.Screen
           name="Home"
-          initialParams={{ feedPath: "home" }}
+          initialParams={{ feedPath: "api/shmoods" }}
           options={{
             headerTitle: "Shmood",
           }}

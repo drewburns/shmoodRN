@@ -5,6 +5,7 @@ import TabBarIcon from "../components/TabBarIcon";
 import { Entypo } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
 import Home from "../screens/Home";
+import UserStack from "../screens/UserStack";
 import NewShmood from "../screens/NewShmood";
 const Tabs = createBottomTabNavigator();
 
@@ -46,7 +47,7 @@ const BottomTabs = () => {
       />
       <Tabs.Screen
         name="Me"
-        component={Placeholder}
+        component={UserStack}
         options={{
           title: "Me",
           tabBarIcon: ({ focused }) => (
